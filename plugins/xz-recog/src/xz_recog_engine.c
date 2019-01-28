@@ -241,7 +241,6 @@ static mrcp_engine_channel_t* xz_recog_engine_channel_create(mrcp_engine_t *engi
 	recog_channel->temp_filename = NULL;
 	recog_channel->last_result = NULL;
 	recog_channel->xz_detector_state = MPF_DETECTOR_EVENT_NONE;
-	// apr_size_t xz_size = recog_channel->detector->speech_timeout;
 	recog_channel->prev_data_link_stack = xz_creat_link_stack(30);
 	
 	capabilities = mpf_sink_stream_capabilities_create(pool);
@@ -313,7 +312,9 @@ static apt_bool_t xz_recog_channel_recognize(mrcp_engine_channel_t *channel, mrc
 	
 	recog_channel->rate = descriptor->sampling_rate;
 	recog_channel->timers_started = TRUE;
-	printf("################ sampling_rate=%d\n", recog_channel->rate);
+
+	// mpf_activity_detector_level_set(mpf_activity_detector_t *detector, apr_size_t level_threshold)
+	mpf_activity_detector_level_set(recog_channel->detector, 20);
 
 	/* get recognizer header */
 	recog_header = mrcp_resource_header_get(request);
@@ -326,6 +327,12 @@ static apt_bool_t xz_recog_channel_recognize(mrcp_engine_channel_t *channel, mrc
 		}
 		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_SPEECH_COMPLETE_TIMEOUT) == TRUE) {
 			mpf_activity_detector_silence_timeout_set(recog_channel->detector,recog_header->speech_complete_timeout);
+		}
+		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_SPEECH_INCOMPLETE_TIMEOUT) == TRUE) {
+			mpf_activity_detector_speech_timeout_set(recog_channel->detector,recog_header->speech_incomplete_timeout);
+		}
+		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_CONFIDENCE_THRESHOLD) == TRUE) {
+			mpf_activity_detector_level_set(recog_channel->detector,recog_header->confidence_threshold);
 		}
 	}
 
