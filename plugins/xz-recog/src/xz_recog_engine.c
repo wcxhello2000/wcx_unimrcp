@@ -41,7 +41,6 @@
 int N = 640; //帧长度
 int LOW_THRESHOLD = 50; //低阈值
 
-// extern void xz_xf_recog_wav(const char* filename);
 
 typedef struct xz_recog_engine_t xz_recog_engine_t;
 typedef struct xz_recog_channel_t xz_recog_channel_t;
@@ -129,7 +128,8 @@ struct xz_recog_channel_t {
 	char  					*last_result;
 	int 					rate;
 	mpf_detector_event_e    xz_detector_state;
-	LINK_STACK				*prev_data_link_stack;
+	// LINK_STACK				*prev_data_link_stack;
+	LINK_QUEUE				*prev_data_queue;
 };
 
 typedef enum {
@@ -241,7 +241,8 @@ static mrcp_engine_channel_t* xz_recog_engine_channel_create(mrcp_engine_t *engi
 	recog_channel->temp_filename = NULL;
 	recog_channel->last_result = NULL;
 	recog_channel->xz_detector_state = MPF_DETECTOR_EVENT_NONE;
-	recog_channel->prev_data_link_stack = xz_creat_link_stack(30);
+	// recog_channel->prev_data_link_stack = xz_creat_link_stack(50);
+	recog_channel->prev_data_queue = xz_creat_queue(50);
 	
 	capabilities = mpf_sink_stream_capabilities_create(pool);
 	mpf_codec_capabilities_add(
@@ -273,8 +274,9 @@ static apt_bool_t xz_recog_channel_destroy(mrcp_engine_channel_t *channel)
 {
 	/* nothing to destrtoy */
 	xz_recog_channel_t *recog_channel = channel->method_obj;
-	xz_destory_link_stack(recog_channel->prev_data_link_stack);
-	// remove(recog_channel->buffer_filename);
+	// xz_destory_link_stack(recog_channel->prev_data_link_stack);
+	xz_destory_queue(recog_channel->prev_data_queue);
+	remove(recog_channel->buffer_filename);
 	return TRUE;
 }
 
@@ -565,7 +567,7 @@ static apt_bool_t xz_recog_recognition_complete(xz_recog_channel_t *recog_channe
 	}
 	/* set request state */
 	message->start_line.request_state = MRCP_REQUEST_STATE_COMPLETE;
-
+	
 	if(cause == RECOGNIZER_COMPLETION_CAUSE_SUCCESS) {	
 		// xz_recog_result_load(recog_channel,message);
 		xz_recog_start_recog(recog_channel);
@@ -594,8 +596,8 @@ static apt_bool_t xz_recog_start_recog(xz_recog_channel_t *recog_channel)
 	
 	//此处调用第三方http接口获取识别结果
 	char* rslt = xz_xf_recog_wav(recog_channel->buffer_wav_filename, recog_channel->rate);
+	apt_log(RECOG_LOG_MARK,APT_PRIO_INFO, "rslt:[%s]", rslt);
 	printf("########################xz rslt:[%s]\n", rslt);
-	// apt_log(RECOG_LOG_MARK,APT_PRIO_INFO, "rslt:[%s]", rslt);
 
 	//此处将识别结果存放在recog_channel中的last_result中
 	if(NULL == recog_channel->last_result) {
@@ -723,11 +725,22 @@ static apt_bool_t xz_recog_amplitudes(const char *source_filename, const char *d
 
 static apt_bool_t xz_recog_add_prev_data(xz_recog_channel_t *recog_channel)
 {
+	// if(recog_channel->buffer_out){
+	// 	// fwrite(voice_data,1,voice_len,recog_channel->buffer_out);
+	// 	LINK_STACK	*stack = recog_channel->prev_data_link_stack;
+	// 	if(stack->cur_size > 0 && stack->link_head){
+	// 		PREV_DATA_NODE_H* head = stack->link_head;
+	// 		PREV_DATA_NODE_T* node = head->next;
+	// 		while(node){
+	// 			fwrite(node->data, 1, node->len, recog_channel->buffer_out);
+	// 			node = node->next;
+	// 		}
+	// 	}
+	// }
 	if(recog_channel->buffer_out){
-		// fwrite(voice_data,1,voice_len,recog_channel->buffer_out);
-		LINK_STACK	*stack = recog_channel->prev_data_link_stack;
-		if(stack->cur_size > 0 && stack->link_head){
-			PREV_DATA_NODE_H* head = stack->link_head;
+		LINK_QUEUE	*queue = recog_channel->prev_data_queue;
+		if(queue->cur_size > 0 && queue->link_head){
+			PREV_DATA_NODE_H* head = queue->link_head;
 			PREV_DATA_NODE_T* node = head->next;
 			while(node){
 				fwrite(node->data, 1, node->len, recog_channel->buffer_out);
@@ -751,8 +764,11 @@ static apt_bool_t xz_recog_stream_write(mpf_audio_stream_t *stream, const mpf_fr
 	}
     
 	if(frame->codec_frame.size){
-		if(recog_channel->prev_data_link_stack){
-			xz_insert_voice_data_into_link_stack(recog_channel->prev_data_link_stack, frame->codec_frame.buffer, frame->codec_frame.size);
+		// if(recog_channel->prev_data_link_stack){
+		// 	xz_insert_voice_data_into_link_stack(recog_channel->prev_data_link_stack, frame->codec_frame.buffer, frame->codec_frame.size);
+		// }
+		if(recog_channel->prev_data_queue){
+			xz_insert_voice_data_into_queue(recog_channel->prev_data_queue, frame->codec_frame.buffer, frame->codec_frame.size);
 		}
 	}
 	if(recog_channel->recog_request) {

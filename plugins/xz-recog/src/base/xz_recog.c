@@ -92,7 +92,6 @@ char* xz_xf_recog_wav(const char* filename, int rate)
             }
             xz_XF_RESULT_destory(ret);
         }
-
         cJSON_Delete(obj); 
     }
 
@@ -101,7 +100,7 @@ char* xz_xf_recog_wav(const char* filename, int rate)
 
     return result;
 }
-// XF_RESULT* xz_xf_parse(cJSON* json);
+
 //讯飞接口，pcm格式
 char* xz_xf_recog_pcm(const char* filename, int rate)
 {

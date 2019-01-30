@@ -23,7 +23,6 @@ int xz_insert_node_tail(NODE_H* head, NODE_T* node);
 void xz_destory_link(NODE_H* head);
 
 /******************************************/
-
 typedef struct PREV_DATA_NODE_T{
      void* data;
      int   len;
@@ -34,28 +33,28 @@ typedef struct PREV_DATA_NODE_H{
     PREV_DATA_NODE_T* next;
 }PREV_DATA_NODE_H;
 
-typedef struct LINK_STACK{
+typedef struct LINK_QUEUE{
     int cur_size;//当前链表栈元素数
     int max_size;//最大链表栈元素数
     PREV_DATA_NODE_H* link_head;//链表头
-}LINK_STACK;
+}LINK_QUEUE;
 
-//创建链表栈
-LINK_STACK* xz_creat_link_stack(int max_size);
+//创建队列
+LINK_QUEUE* xz_creat_queue(int max_size);
 
-//销毁链表栈
-int xz_destory_link_stack(LINK_STACK* stack);
-
-//销毁链表
-void xz_destory_prev_data_link(PREV_DATA_NODE_H* head);
+//销毁队列
+int xz_destory_queue(LINK_QUEUE* queue);
 
 //插入一段音频数据
-void xz_insert_voice_data_into_link_stack(LINK_STACK* stack, const void *voice_data, unsigned int voice_len);
+void xz_insert_voice_data_into_queue(LINK_QUEUE* queue, const void *voice_data, unsigned int voice_len);
 
-//入栈
-void xz_push_link_stack(LINK_STACK* stack, PREV_DATA_NODE_T* node);
+//入队
+void xz_push_queue(LINK_QUEUE* queue, PREV_DATA_NODE_T* node);
 
-//出栈
-PREV_DATA_NODE_T* xz_pop_link_stack(LINK_STACK* stack);
+//出队
+PREV_DATA_NODE_T* xz_pop_queue(LINK_QUEUE* queue);
+
+//销毁链表(节点类型PREV_DATA_NODE_T)
+void xz_destory_prev_data_link(PREV_DATA_NODE_H* head);
 
 #endif

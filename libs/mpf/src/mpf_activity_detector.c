@@ -47,7 +47,7 @@ struct mpf_activity_detector_t {
 MPF_DECLARE(mpf_activity_detector_t*) mpf_activity_detector_create(apr_pool_t *pool)
 {
 	mpf_activity_detector_t *detector = apr_palloc(pool,sizeof(mpf_activity_detector_t));
-	detector->level_threshold = 10; /* 0 .. 255 */
+	detector->level_threshold = 20; /* 0 .. 255 */
 	detector->speech_timeout = 300; /* 0.3 s */
 	detector->silence_timeout = 300; /* 0.3 s */
 	detector->noinput_timeout = 5000; /* 5 s */
@@ -109,7 +109,7 @@ static apr_size_t mpf_activity_detector_level_calculate(const mpf_frame_t *frame
 			sum += *cur;
 		}
 	}
-
+	
 	return sum / count;
 }
 

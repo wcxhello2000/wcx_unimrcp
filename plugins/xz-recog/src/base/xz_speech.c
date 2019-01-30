@@ -103,7 +103,7 @@ cJSON* xz_xf_recognize(char* url, const char* voice_binary, int len, const char*
     char* appid = "5c236634";
     char* apikey = "3189dd39a2929af967807753ecaab6a4";
     char* curtime = xz_current_time();//need free after finshed 
-    char *param = NULL;
+    char* param = NULL;
     unsigned char* checksum = NULL;
 
     //X-Param
@@ -112,7 +112,7 @@ cJSON* xz_xf_recognize(char* url, const char* voice_binary, int len, const char*
     snprintf(rate_str, 10, "sms%dk", rate/1000);
     cJSON_AddStringToObject(param_obj, "engine_type", rate_str);
     cJSON_AddStringToObject(param_obj, "aue", format);
-    char *param_json_str = cJSON_Print(param_obj);
+    char* param_json_str = cJSON_Print(param_obj);//need free after finshed
     param = xz_base64_encode(param_json_str, strlen(param_json_str));//need free after finshed 
     cJSON_Delete(param_obj);
     free(param_json_str);
