@@ -301,6 +301,7 @@ static apt_bool_t xz_recog_channel_request_process(mrcp_engine_channel_t *channe
 /** Process RECOGNIZE request */
 static apt_bool_t xz_recog_channel_recognize(mrcp_engine_channel_t *channel, mrcp_message_t *request, mrcp_message_t *response)
 {
+	
 	/* process RECOGNIZE request */
 	mrcp_recog_header_t *recog_header;
 	xz_recog_channel_t *recog_channel = channel->method_obj;
@@ -321,20 +322,29 @@ static apt_bool_t xz_recog_channel_recognize(mrcp_engine_channel_t *channel, mrc
 	/* get recognizer header */
 	recog_header = mrcp_resource_header_get(request);
 	if(recog_header) {
+		mrcp_engine_config_t *config = channel->engine->config;
 		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_START_INPUT_TIMERS) == TRUE) {
 			recog_channel->timers_started = recog_header->start_input_timers;
 		}
 		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_NO_INPUT_TIMEOUT) == TRUE) {
 			mpf_activity_detector_noinput_timeout_set(recog_channel->detector,recog_header->no_input_timeout);
+		}else {
+			mpf_activity_detector_noinput_timeout_set(recog_channel->detector,config->no_input_timeout);
 		}
 		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_SPEECH_COMPLETE_TIMEOUT) == TRUE) {
 			mpf_activity_detector_silence_timeout_set(recog_channel->detector,recog_header->speech_complete_timeout);
+		}else {
+			mpf_activity_detector_silence_timeout_set(recog_channel->detector,config->silence_timeout);
 		}
 		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_SPEECH_INCOMPLETE_TIMEOUT) == TRUE) {
 			mpf_activity_detector_speech_timeout_set(recog_channel->detector,recog_header->speech_incomplete_timeout);
+		}else {
+			mpf_activity_detector_speech_timeout_set(recog_channel->detector,config->speech_timeout);
 		}
 		if(mrcp_resource_header_property_check(request,RECOGNIZER_HEADER_CONFIDENCE_THRESHOLD) == TRUE) {
 			mpf_activity_detector_level_set(recog_channel->detector,recog_header->confidence_threshold);
+		}else {
+			mpf_activity_detector_level_set(recog_channel->detector,config->level_threshold);
 		}
 	}
 
@@ -725,18 +735,6 @@ static apt_bool_t xz_recog_amplitudes(const char *source_filename, const char *d
 
 static apt_bool_t xz_recog_add_prev_data(xz_recog_channel_t *recog_channel)
 {
-	// if(recog_channel->buffer_out){
-	// 	// fwrite(voice_data,1,voice_len,recog_channel->buffer_out);
-	// 	LINK_STACK	*stack = recog_channel->prev_data_link_stack;
-	// 	if(stack->cur_size > 0 && stack->link_head){
-	// 		PREV_DATA_NODE_H* head = stack->link_head;
-	// 		PREV_DATA_NODE_T* node = head->next;
-	// 		while(node){
-	// 			fwrite(node->data, 1, node->len, recog_channel->buffer_out);
-	// 			node = node->next;
-	// 		}
-	// 	}
-	// }
 	if(recog_channel->buffer_out){
 		LINK_QUEUE	*queue = recog_channel->prev_data_queue;
 		if(queue->cur_size > 0 && queue->link_head){

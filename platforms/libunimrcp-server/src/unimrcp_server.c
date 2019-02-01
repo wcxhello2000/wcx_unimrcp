@@ -717,6 +717,26 @@ static apt_bool_t unimrcp_server_plugin_load(unimrcp_server_loader_t *loader, co
 					apr_table_set(config->params,attr_name->value,attr_value->value);
 				}
 			}
+			if(strcasecmp(elem->name,"level_threshold") == 0) {
+				if(is_cdata_valid(elem) == TRUE) {
+					config->level_threshold = atol(cdata_text_get(elem));
+				}
+			}
+			if(strcasecmp(elem->name,"speech_timeout") == 0) {
+				if(is_cdata_valid(elem) == TRUE) {
+					config->speech_timeout = atol(cdata_text_get(elem));
+				}
+			}
+			if(strcasecmp(elem->name,"silence_timeout") == 0) {
+				if(is_cdata_valid(elem) == TRUE) {
+					config->silence_timeout = atol(cdata_text_get(elem));
+				}
+			}
+			if(strcasecmp(elem->name,"noinput_timeout") == 0) {
+				if(is_cdata_valid(elem) == TRUE) {
+					config->no_input_timeout = atol(cdata_text_get(elem));
+				}
+			}
 		}
 	}
 

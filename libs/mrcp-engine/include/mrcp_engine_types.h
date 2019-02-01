@@ -147,6 +147,11 @@ struct mrcp_engine_config_t {
 	apr_size_t   max_channel_count;
 	/** Table of name/value string params */
 	apr_table_t *params;
+	/*xz_recog config*/
+	apr_size_t   level_threshold;
+	apr_size_t   speech_timeout;
+	apr_size_t   silence_timeout;
+	apr_size_t	 no_input_timeout;
 };
 
 APT_END_EXTERN_C
